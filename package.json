@@ -1,6 +1,7 @@
 {
   "name": "vindi-checkout",
   "private": true,
+  "homepage": "https://server.alumni.org.br/alumni-checkout/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

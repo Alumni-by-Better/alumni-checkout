@@ -5,4 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/alumni-checkout/',
+  build: {
+    minify: true,
+    sourcemap: false,
+    target: 'modules',
+  },
 })

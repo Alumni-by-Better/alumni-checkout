@@ -1,7 +1,7 @@
 {
   "name": "vindi-checkout",
   "private": true,
-  "homepage": "/",
+  "homepage": "/alumni-checkout/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

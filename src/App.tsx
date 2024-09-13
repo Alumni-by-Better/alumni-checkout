@@ -19,7 +19,7 @@ function App() {
   return (
     <>
       <main style={styles.main}>
-        <BrowserRouter>
+        <BrowserRouter basename="/alumni-checkout">
           <Routes>
             <Route index element={<Home />} />
           </Routes>

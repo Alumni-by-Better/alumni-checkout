@@ -98,7 +98,7 @@ const PreCheckout: React.FC = () => {
       console.log('Payload:', payload);
 
       const data = await registerLink(payload); // Chama o método do serviço
-      setLink("http://localhost:5173/checkout/" + data.token);
+      setLink("https://server.alumni.org.br/alumni-checkout/checkout/" + data.token);
       console.log('checkout registrado com sucesso:', data);
       // O backend retorna o link gerado, que pode ser exibido ou salvo
     } catch (error) {

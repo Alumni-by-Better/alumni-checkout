@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input, Select } from 'antd';
 import InputMask from 'react-input-mask';

@@ -28,7 +28,7 @@ const PreCheckout: React.FC = () => {
   const [recurrence, setRecurrence] = useState<number | undefined>();
   const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>();
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | undefined>();
-  const [discount, setDiscount] = useState<number>(0);
+  // const [discount, setDiscount] = useState<number>(0);
   const [link, setLink] = useState<string>('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [materiais, setMateriais] = useState<Course[]>([]);
@@ -103,7 +103,7 @@ const PreCheckout: React.FC = () => {
       const payload = {
         course_id: selectedCourseId,
         material_id: selectedMaterialId,
-        discount,
+        discount: 0,
         recurrence: recurrence || 0,
       };
 
@@ -260,7 +260,7 @@ const PreCheckout: React.FC = () => {
             </Form.Item>
 
             {/* Campo de Desconto */}
-            <Form.Item<FieldType>
+            {/* <Form.Item<FieldType>
               style={styles.formItem}
               label="Desconto"
               name="discount"
@@ -275,7 +275,7 @@ const PreCheckout: React.FC = () => {
                 onChange={(e) => setDiscount(Number(e.target.value))}
                 placeholder="Desconto"
               />
-            </Form.Item>
+            </Form.Item> */}
 
             <Button style={styles.formButton} onClick={generateLink} disabled={loading}>
               {loading ? 'Gerando...' : 'Gerar Link de Pagamento'}

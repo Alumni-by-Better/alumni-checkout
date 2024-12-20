@@ -398,7 +398,7 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
         rules={[{ required: true, message: 'Please accept the terms!' }]}
       >
         <Checkbox>
-          Eu aceito os <a href="/terms">termos e condições</a>
+          Eu aceito os <a href="https://alumni.org.br/termos-e-condicoes/">termos e condições</a>
         </Checkbox>
       </Form.Item>
 

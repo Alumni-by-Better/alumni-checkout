@@ -123,12 +123,23 @@ export interface CourseProps {
   }[];
 }
 
+interface CheckoutData {
+  course_id: string;
+  material_id: string;
+  discount: number;
+  recurrence: boolean;
+}
+
 function Home() {
   const { token } = useParams<ParamsProps>();
   // const { checkoutData, setCheckoutData } = useCheckout();
+  const [checkoutDataByToken, setCheckoutDataByToken] = useState<CheckoutData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<CourseProps>();
+  const [selectedMaterial, setSelectedMaterial] = useState<CourseProps>();
+  const installments =
+    parseInt(selectedCourse?.name?.match(/\d+/)?.[0] || "0", 10);
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
@@ -139,29 +150,28 @@ function Home() {
         }
 
         // Nova função de busca baseada no token
-        const checkoutDataByToken = await fetchCheckoutDataByToken(token);
+        const checkoutData = await fetchCheckoutDataByToken(token);
+        console.log('checkoutData', checkoutData);
 
-        console.log('checkoutDataByToken', checkoutDataByToken);
-
-        if (!checkoutDataByToken) {
+        if (!checkoutData) {
           throw new Error('Nenhum dado encontrado para o token fornecido');
         }
 
+        setCheckoutDataByToken(checkoutData);
+
         const course =
-          checkoutDataByToken.recurrence
-            ? await getPlanById(checkoutDataByToken.course_id) // Busca plano
-            : await getCourseById(checkoutDataByToken.course_id); // Busca curso
+          checkoutData.recurrence
+            ? await getPlanById(checkoutData.course_id) // Busca plano
+            : await getCourseById(checkoutData.course_id); // Busca curso
 
         console.log('course', course);
 
         setSelectedCourse(course);
-        // setCheckoutData({
-        //   ...checkoutData,
-        //   course_name: selectedCourse?.name ?? null,
-        //   course_price: selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price.toString() || '0',
-        //   discount: selectedCourse?.discount || 0,
-        //   recurrence: checkoutDataByToken.recurrence,
-        // });
+
+        const material = await getCourseById(checkoutData.material_id);
+        setSelectedMaterial(material);
+
+        console.log("material", material);
       } catch (error) {
         console.error('Erro ao carregar os dados do checkout:', error);
         setError('Erro ao carregar os dados do checkout');
@@ -174,8 +184,9 @@ function Home() {
   }, [token]);
 
 
-  // console.log('checkoutData', checkoutData);
+  console.log('checkoutDataByToken', checkoutDataByToken);
   console.log('selectedCourse', selectedCourse);
+  console.log('selectedMaterial', selectedMaterial);
 
   if (loading) return <p>Carregando dados do curso...</p>;
 
@@ -196,8 +207,18 @@ function Home() {
               <h3 style={styles.productCardHeader}>{selectedCourse?.plan_items?.[0]?.product?.name || selectedCourse?.name || "Nome do Curso"}</h3>
             </div>
             <div className="card-body">
-              <h4 style={styles.productCardTitle}>R$ {formatNumber(selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price ?? selectedCourse?.pricing_schema?.price ?? 0)}</h4>
-              <p style={styles.productCardMethod}><span style={styles.productCardMethodSpan}>cartão de crédito</span></p>
+              <h4 style={styles.productCardTitle}><small>R$</small> {
+                formatNumber(
+                  selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price
+                  ?? selectedCourse?.pricing_schema?.price ?? 0
+                )}
+              </h4>
+              <p style={styles.productCardMethod}>
+                <span style={styles.productCardMethodSpan}>
+                  cartão de crédito
+                  {selectedCourse?.plan_items && " / mês"}
+                </span>
+              </p>
             </div>
           </div>
           <div className="card" style={styles.productCard}>
@@ -205,10 +226,20 @@ function Home() {
               <h3 style={styles.productCardHeader}> Material Didático - {selectedCourse?.plan_items?.[0].product.name.replace(" - Recorrência", "") || selectedCourse?.name}</h3>
             </div>
             <div className="card-body">
-              <h4 style={styles.productCardTitle}>R$ {formatNumber(selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price ?? selectedCourse?.pricing_schema?.price ?? 0)}
+              <h4 style={styles.productCardTitle}><small>R$</small> {
+                formatNumber(
+                  (
+                    (selectedMaterial?.pricing_schema?.price ?? 0)
+                    // *
+                    // (selectedMaterial?.plan_items?.[0]?.cycles ?? 0)
+                  )
+                )}
               </h4>
               <p style={styles.productCardMethod}>
-                <span style={styles.productCardMethodSpan}>cartão de crédito</span>
+                <span style={styles.productCardMethodSpan}>
+                  cartão de crédito
+                  {selectedCourse?.plan_items && ` parcelado ${selectedCourse?.plan_items?.[0]?.cycles}x`}
+                </span>
               </p>
             </div>
           </div>
@@ -216,7 +247,18 @@ function Home() {
             <span style={styles.productCardTotalTitle}>Valor total</span>
             <span style={styles.productCardTotalValue}>
               <small style={styles.productCardTotalValueSmall}>R$</small>
-              {formatNumber((selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price ?? selectedCourse?.pricing_schema?.price ?? 0) * (selectedCourse?.plan_items?.[0]?.cycles ?? 2))}
+              {formatNumber(
+                selectedCourse?.plan_items ? (selectedCourse?.plan_items?.[0]?.product?.pricing_schema?.price ?? 0)
+                  * (selectedCourse?.plan_items?.[0]?.cycles ?? 0)
+                  * 2
+                  : (selectedCourse?.pricing_schema?.price ?? 0)
+                  * 2
+              )}
+              {!selectedCourse?.plan_items &&
+                <>
+                  <small> parcelado até</small> {selectedCourse?.plan_items?.[0]?.cycles ?? installments}x
+                </>
+              }
             </span>
           </div>
         </div>
@@ -225,6 +267,8 @@ function Home() {
         {token && (
           <FormCheckout
             course={selectedCourse}
+            recurrence={checkoutDataByToken?.recurrence}
+            material={selectedMaterial}
             token={token}
           />
         )}

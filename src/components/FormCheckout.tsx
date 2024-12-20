@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import type { FormProps } from 'antd';
-import { Button, Checkbox, Form, Input, Select } from 'antd';
+import { Button, Checkbox, Col, Form, Input, message, Row, Select } from 'antd';
 import InputMask from 'react-input-mask';
 import styled from "styled-components";
 import { submitCheckout } from "../services/api";
 import { CourseProps } from "../views/Home";
 import { formatNumber } from "../utils";
+import axios from "axios";
 
 const Pattern = `
   box-sizing: border-box;
@@ -30,9 +31,11 @@ export const InputMaskedContainer = styled(InputMask)`
 interface FormCheckoutProps {
   token: string;
   course?: CourseProps;
+  material?: CourseProps;
+  recurrence?: boolean;
 }
 
-const FormCheckout = ({ course }: FormCheckoutProps) => {
+const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
   // const [formData, setFormData] = useState({
   //   name: '',
   //   email: '',
@@ -117,19 +120,28 @@ const FormCheckout = ({ course }: FormCheckoutProps) => {
     card_holder_name: string;
     card_cvv: string;
     course_id: string;
+    material_id: string;
     installments: number;
     accept_terms: boolean;
+    address_zipcode: string;
+    address_state: string;
+    address_city: string;
+    address_neighborhood: string;
+    address_number: string;
+    address_street: string;
   };
 
   // Função chamada ao enviar o formulário
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     console.log('Form submitted:', values);
-    if (course?.plan_items) {
-      course.id = course.plan_items[0].product.id;
-    }
+    // if (course?.plan_items) {
+    //   course.id = course.plan_items[0].product.id;
+    // }
     const payload = {
       ...values,
       course_id: course?.id || "",
+      material_id: material?.id || "",
+      recurrence: recurrence ? 1 : 0,
     };
 
     console.log("Form payload:", payload);
@@ -177,10 +189,41 @@ const FormCheckout = ({ course }: FormCheckoutProps) => {
 
   const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
     console.log('Failed:', errorInfo);
+    message.error('Erro ao enviar o formulário. Verifique os campos e tente novamente.');
   };
+
+  const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const cep = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+    if (cep.length === 8) {
+      try {
+        const { data } = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!data.erro) {
+          // Configura os valores nos campos do formulário
+          form.setFieldsValue({
+            address_state: data.uf || '',
+            address_city: data.localidade || '',
+            address_neighborhood: data.bairro || '',
+            address_street: data.logradouro || '',
+          });
+          console.log('Valores atualizados no formulário:', form.getFieldsValue());
+        } else {
+          // alert('CEP não encontrado!');
+          message.error('CEP não encontrado!');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        message.error('Erro ao buscar o CEP. Tente novamente.');
+        // alert('Erro ao buscar o CEP. Tente novamente.');
+      }
+    } else {
+      alert('Por favor, insira um CEP válido com 8 dígitos.');
+    }
+  };
+
 
   return (
     <Form
+      form={form}
       name="basic"
       layout="vertical"
       labelCol={{ span: "100%" }}
@@ -225,14 +268,74 @@ const FormCheckout = ({ course }: FormCheckoutProps) => {
 
       <Form.Item<FieldType>
         style={styles.formItem}
-        label="Endereço"
-        name="address"
-        rules={[{ required: true, message: "Por favor, selecione seu endereço!" }]}
+        label="CEP"
+        name="address_zipcode"
+        rules={[{ required: true, message: 'Por favor, insira seu CEP!' }]}
       >
-        <Select style={styles.formSelect}>
-          <Select.Option value="brasil">Brasil</Select.Option>
-        </Select>
+        <InputMaskedContainer
+          type="text"
+          mask="99999-999"
+          placeholder="00000-000"
+          onBlur={handleCepBlur}
+        />
       </Form.Item>
+
+      <Row gutter={16}>
+        <Col span={6}>
+          <Form.Item<FieldType>
+            style={styles.formItem}
+            label="Estado"
+            name="address_state"
+            rules={[{ required: true, message: 'Por favor, insira o estado!' }]}
+          >
+            <Input style={styles.formInput} />
+          </Form.Item>
+        </Col>
+
+        <Col span={18}>
+          <Form.Item<FieldType>
+            style={styles.formItem}
+            label="Cidade"
+            name="address_city"
+            rules={[{ required: true, message: 'Por favor, insira a cidade!' }]}
+          >
+            <Input style={styles.formInput} />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Form.Item<FieldType>
+        style={styles.formItem}
+        label="Bairro"
+        name="address_neighborhood"
+        rules={[{ required: true, message: 'Por favor, insira o bairro!' }]}
+      >
+        <Input style={styles.formInput} />
+      </Form.Item>
+
+      <Row gutter={16}>
+        <Col span={20}>
+          <Form.Item<FieldType>
+            style={styles.formItem}
+            label="Rua"
+            name="address_street"
+            rules={[{ required: true, message: 'Por favor, insira a rua!' }]}
+          >
+            <Input style={styles.formInput} />
+          </Form.Item>
+        </Col>
+
+        <Col span={4}>
+          <Form.Item<FieldType>
+            style={styles.formItem}
+            label="Número"
+            name="address_number"
+            rules={[{ required: true, message: 'Por favor, insira o número!' }]}
+          >
+            <Input style={styles.formInput} />
+          </Form.Item>
+        </Col>
+      </Row>
 
       <Form.Item<FieldType>
         style={styles.formItem}
@@ -272,7 +375,7 @@ const FormCheckout = ({ course }: FormCheckoutProps) => {
             {[...Array(installments)].map((_, index) => (
               <Select.Option key={index + 1} value={index + 1}>
                 {index + 1}x de R$
-                {formatNumber((course?.pricing_schema?.price ?? 0) / (index + 1))}
+                {formatNumber((course?.pricing_schema?.price ?? 0) / (index + 1) * 2)}
               </Select.Option>
             ))}
           </Select>

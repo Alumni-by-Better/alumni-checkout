@@ -3,7 +3,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: 'https://server.alumni.org.br/api/vindi',
+  // baseURL: 'https://server.alumni.org.br/api/vindi',
+  baseURL: 'http://localhost:8000/api/vindi',
 });
 
 interface CheckoutData {
@@ -17,10 +18,12 @@ interface CheckoutData {
   card_cvv: string;
   installments: number;
   accept_terms: boolean;
+  recurrence: number;
 }
 
 interface RegisterLinkData {
   course_id: string;
+  material_id: string;
   discount: number;
   recurrence: number;
 }
@@ -38,6 +41,11 @@ export const savePresetAndGenerateLink = async (course_id: string, discount: num
 
 export const getCourses = async () => {
   const response = await api.get('/products');
+  return response.data;
+}
+
+export const getMaterials = async () => {
+  const response = await api.get('/materials');
   return response.data;
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getCourses, getPlans, registerLink } from '../services/api';
-import { Button, Col, Form, Input, Layout, Row, Select } from 'antd';
+import { getCourses, getMaterials, getPlans, registerLink } from '../services/api';
+import { Button, Col, Form, Input, Layout, message, Row, Select } from 'antd';
 
 interface Course {
   id: string;
@@ -21,26 +21,35 @@ type FieldType = {
   discount?: string;
   plan?: string;
   recurrence?: number;
+  material?: string;
 };
 
 const PreCheckout: React.FC = () => {
   const [recurrence, setRecurrence] = useState<number | undefined>();
   const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>();
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | undefined>();
   const [discount, setDiscount] = useState<number>(0);
   const [link, setLink] = useState<string>('');
   const [courses, setCourses] = useState<Course[]>([]);
+  const [materiais, setMateriais] = useState<Course[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadCourses = async () => {
-      let courses = await getCourses();
-      courses = courses.filter((course: Course) => !course.name.includes('Recorrência'));
+      const products = await getCourses();
+
+      const materiais = await getMaterials()
+      setMateriais(materiais);
+      console.log("materiais", materiais);
+
+      const courses = products.filter((course: Course) => !course.name.includes('Recorrência') && !course.name.includes('Material Didático'));
       setCourses(courses);
     };
 
     const loadPlans = async () => {
       const plans = await getPlans();
+      plans.filter((plan: Plan) => !plan.name.includes('Material Didático'));
       setPlans(plans);
     };
 
@@ -84,13 +93,16 @@ const PreCheckout: React.FC = () => {
   // };
 
   const generateLink = async () => {
-    if (!selectedCourseId) return;
+    if (!selectedCourseId || !selectedMaterialId) return;
     console.log("selectedCourseId", selectedCourseId);
     console.log("recurrence", recurrence);
+
+    setLoading(true);
 
     try {
       const payload = {
         course_id: selectedCourseId,
+        material_id: selectedMaterialId,
         discount,
         recurrence: recurrence || 0,
       };
@@ -99,9 +111,11 @@ const PreCheckout: React.FC = () => {
 
       const data = await registerLink(payload); // Chama o método do serviço
       setLink("https://server.alumni.org.br/alumni-checkout/checkout/" + data.token);
+      message.success('Link gerado com sucesso!');
       console.log('checkout registrado com sucesso:', data);
       // O backend retorna o link gerado, que pode ser exibido ou salvo
     } catch (error) {
+      message.error('Erro ao gerar link, tente novamente!');
       console.error('Falha ao registrar o link:', error);
       // Trate o erro apropriadamente (exibir mensagem, tentar novamente, etc.)
     }
@@ -182,7 +196,7 @@ const PreCheckout: React.FC = () => {
             </Form.Item>
 
             {/* Campo de Plano */}
-            {recurrence === 1 && (
+            {recurrence === 1 ? (
               <Form.Item<FieldType>
                 style={styles.formItem}
                 label="Nome do plano"
@@ -201,29 +215,49 @@ const PreCheckout: React.FC = () => {
                   ))}
                 </Select>
               </Form.Item>
-            )}
+            ) :
+              (
+                <>
+                  <Form.Item<FieldType>
+                    style={styles.formItem}
+                    label="Nome do curso"
+                    name="course"
+                    rules={[{ required: true, message: 'Por favor, selecione um curso!' }]}
+                  >
+                    <Select
+                      style={styles.formSelect}
+                      placeholder="Selecione um curso"
+                      value={selectedCourseId}
+                      onChange={(value) => setSelectedCourseId(value)}
+                    >
+                      <Select.Option value="" disabled>Selecione um curso</Select.Option>
+                      {courses.map((course) => (
+                        <Select.Option key={course.id} value={course.id}>{course.name}</Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </>
+              )
+            }
 
-            {/* Campo de Curso */}
-            {recurrence === 0 && (
-              <Form.Item<FieldType>
-                style={styles.formItem}
-                label="Nome do curso"
-                name="course"
-                rules={[{ required: true, message: 'Por favor, selecione um curso!' }]}
+            <Form.Item<FieldType>
+              style={styles.formItem}
+              label="Material Didático"
+              name="material"
+              rules={[{ required: true, message: 'Por favor, selecione um material!' }]}
+            >
+              <Select
+                style={styles.formSelect}
+                placeholder="Selecione um material didático"
+                value={selectedMaterialId}
+                onChange={(value) => setSelectedMaterialId(value)}
               >
-                <Select
-                  style={styles.formSelect}
-                  placeholder="Selecione um curso"
-                  value={selectedCourseId}
-                  onChange={(value) => setSelectedCourseId(value)}
-                >
-                  <Select.Option value="" disabled>Selecione um curso</Select.Option>
-                  {courses.map((course) => (
-                    <Select.Option key={course.id} value={course.id}>{course.name}</Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            )}
+                <Select.Option value="" disabled>Selecione um material</Select.Option>
+                {materiais.map((material) => (
+                  <Select.Option key={material.id} value={material.id}>{material.name}</Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
             {/* Campo de Desconto */}
             <Form.Item<FieldType>
@@ -243,7 +277,7 @@ const PreCheckout: React.FC = () => {
               />
             </Form.Item>
 
-            <Button style={styles.formButton} onClick={generateLink}>
+            <Button style={styles.formButton} onClick={generateLink} disabled={loading}>
               {loading ? 'Gerando...' : 'Gerar Link de Pagamento'}
             </Button>
             {link && (

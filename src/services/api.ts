@@ -3,8 +3,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  // baseURL: 'https://server.alumni.org.br/api/vindi',
-  baseURL: 'http://localhost:8000/api/vindi',
+  baseURL: 'https://server.alumni.org.br/api/vindi',
+  // baseURL: 'http://localhost:8000/api/vindi',
 });
 
 interface CheckoutData {

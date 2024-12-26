@@ -443,7 +443,7 @@ const FormCheckout = ({ course, material, recurrence, customer }: FormCheckoutPr
           loading={loading}
           disabled={loading}
         >
-          Pagar
+          {loading ? 'Processando...' : 'Pagar'}
         </Button>
       </Form.Item>
     </Form>

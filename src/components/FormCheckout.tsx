@@ -7,6 +7,8 @@ import { submitCheckout } from "../services/api";
 import { CourseProps } from "../views/Home";
 import { formatNumber } from "../utils";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../hooks/useUser";
 
 const Pattern = `
   box-sizing: border-box;
@@ -57,9 +59,11 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
   // });
 
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const cycles = course?.plan_items?.[0]?.cycles;
   const installments =
     parseInt(course?.name?.match(/\d+/)?.[0] || "0", 10);
+  const { setUser } = useUser();
 
   console.log('course formcheckout', course);
   console.log('course cycles', cycles);
@@ -153,9 +157,14 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
       const response = await submitCheckout(payload);
       console.log('Response:', response);
 
-      if (response) {
-        alert('Form submitted successfully 🎉');
+      if (response.success) {
+        // alert('Form submitted successfully 🎉');
         form.resetFields(); // Limpa os campos do formulário
+        setUser({
+          name: values.name,
+          course: course?.name || '',
+        });
+        navigate('/success');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -397,13 +406,20 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
       </Form.Item>
 
       <Form.Item<FieldType>
+        style={styles.formItem}
         name="accept_terms"
         valuePropName="checked"
-        style={styles.formItem}
-        rules={[{ required: true, message: 'Please accept the terms!' }]}
+        rules={[
+          {
+            validator: (_, value) =>
+              value
+                ? Promise.resolve()
+                : Promise.reject(new Error('Você deve aceitar os termos para continuar!')),
+          },
+        ]}
       >
         <Checkbox>
-          Eu aceito os <a href="https://alumni.org.br/termos-e-condicoes/">termos e condições</a>
+          Eu aceito os <a className="" href="https://alumni.org.br/termos-e-condicoes/">termos e condições</a>
         </Checkbox>
       </Form.Item>
 

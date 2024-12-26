@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
 import Home from "./views/Home";
 import PreCheckout from "./views/PreCheckout";
+import { ThankYou } from "./views/components/ThankYou";
+import { UserProvider } from "./context/UserContext";
 
 function App() {
 
@@ -19,17 +21,19 @@ function App() {
   }
   return (
     <>
-      <main style={styles.main}>
-        <BrowserRouter basename="/alumni-checkout">
-          <Routes>
-            <Route path="/" element={<PreCheckout />} />
-            <Route path="/checkout/:token" element={<Home />} />
-            <Route path="/success" element={<h1>Success</h1>} />
-            <Route path="/error" element={<h1>Error</h1>} />
-            <Route path="*" element={<h1>404 - Not Found</h1>} />
-          </Routes>
-        </BrowserRouter>
-      </main>
+      <UserProvider>
+        <main style={styles.main}>
+          <BrowserRouter basename="/alumni-checkout">
+            <Routes>
+              <Route path="/" element={<PreCheckout />} />
+              <Route path="/checkout/:token" element={<Home />} />
+              <Route path="/success" element={<ThankYou />} />
+              <Route path="/error" element={<h1>Error</h1>} />
+              <Route path="*" element={<h1>404 - Not Found</h1>} />
+            </Routes>
+          </BrowserRouter>
+        </main>
+      </UserProvider>
     </>
   )
 }

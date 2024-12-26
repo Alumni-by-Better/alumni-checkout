@@ -243,7 +243,7 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
       labelCol={{ span: "100%" }}
       wrapperCol={{ span: 24 }}
       style={{ ...styles.form, maxWidth: 600 }}
-      initialValues={{ remember: true }}
+      initialValues={{ remember: true, installments: 1 }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="on"
@@ -385,7 +385,7 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
           name="installments"
           rules={[{ required: true, message: 'Please input your installments!' }]}
         >
-          <Select style={styles.formSelect} defaultValue={1}>
+          <Select style={styles.formSelect}>
             {[...Array(installments)].map((_, index) => (
               <Select.Option key={index + 1} value={index + 1}>
                 {index + 1}x de R$

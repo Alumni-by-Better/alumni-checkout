@@ -35,9 +35,15 @@ interface FormCheckoutProps {
   course?: CourseProps;
   material?: CourseProps;
   recurrence?: boolean;
+  customer?: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
 }
 
-const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
+const FormCheckout = ({ course, material, recurrence, customer }: FormCheckoutProps) => {
   // const [formData, setFormData] = useState({
   //   name: '',
   //   email: '',
@@ -73,8 +79,8 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
 
   useEffect(() => {
     // Força o valor inicial
-    form.setFieldsValue({ address: "brasil" });
-  }, [form]);
+    form.setFieldsValue({ address: "brasil", email: customer?.email });
+  }, [form, customer]);
 
   const styles = {
     form: {
@@ -266,7 +272,13 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
           { type: 'email', message: 'Please enter a valid email!' },
         ]}
       >
-        <Input style={styles.formInput} />
+        <Input
+          style={styles.formInput}
+          type="email"
+          value={customer?.email}
+          disabled={!!customer?.email}
+          readOnly={!!customer?.email}
+        />
       </Form.Item>
 
       <Form.Item<FieldType>

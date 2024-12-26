@@ -22,9 +22,16 @@ type FieldType = {
   plan?: string;
   recurrence?: number;
   material?: string;
+  email?: string;
 };
 
 const PreCheckout: React.FC = () => {
+  const [customer, setCustomer] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  }>({ email: '', name: '', phone: '', address: '' });
   const [recurrence, setRecurrence] = useState<number | undefined>();
   const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>();
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | undefined>();
@@ -105,6 +112,7 @@ const PreCheckout: React.FC = () => {
         material_id: selectedMaterialId,
         discount: 0,
         recurrence: recurrence || 0,
+        customer: customer || {},
       };
 
       console.log('Payload:', payload);
@@ -257,6 +265,25 @@ const PreCheckout: React.FC = () => {
                   <Select.Option key={material.id} value={material.id}>{material.name}</Select.Option>
                 ))}
               </Select>
+            </Form.Item>
+
+            {/* Campo de email do cliente */}
+            <Form.Item<FieldType>
+              style={styles.formItem}
+              label="Email do cliente"
+              name="email"
+              rules={[
+                { required: true, message: 'Por favor, insira o email!' },
+                { type: 'email', message: 'Por favor, insira um email válido!' },
+              ]}
+            >
+              <Input
+                type="email"
+                style={styles.formInput}
+                placeholder="Email do cliente"
+                value={customer.email}
+                onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+              />
             </Form.Item>
 
             {/* Campo de Desconto */}

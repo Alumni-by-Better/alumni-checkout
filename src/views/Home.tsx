@@ -128,6 +128,12 @@ interface CheckoutData {
   material_id: string;
   discount: number;
   recurrence: boolean;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
 }
 
 function Home() {
@@ -269,6 +275,7 @@ function Home() {
             course={selectedCourse}
             recurrence={checkoutDataByToken?.recurrence}
             material={selectedMaterial}
+            customer={checkoutDataByToken?.customer}
             token={token}
           />
         )}

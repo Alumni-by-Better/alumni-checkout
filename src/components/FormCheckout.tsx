@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Col, Form, Input, message, Row, Select } from 'antd';
 import InputMask from 'react-input-mask';
@@ -56,6 +56,7 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
   //   installments: 1,
   // });
 
+  const [loading, setLoading] = useState(false);
   const cycles = course?.plan_items?.[0]?.cycles;
   const installments =
     parseInt(course?.name?.match(/\d+/)?.[0] || "0", 10);
@@ -134,6 +135,7 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
   // Função chamada ao enviar o formulário
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     console.log('Form submitted:', values);
+    setLoading(true);
     // if (course?.plan_items) {
     //   course.id = course.plan_items[0].product.id;
     // }
@@ -157,6 +159,9 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
       }
     } catch (error) {
       console.error('Error:', error);
+      message.error('Erro ao enviar o formulário. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
 
 
@@ -403,7 +408,13 @@ const FormCheckout = ({ course, material, recurrence }: FormCheckoutProps) => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={styles.formButton}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          style={styles.formButton}
+          loading={loading}
+          disabled={loading}
+        >
           Pagar
         </Button>
       </Form.Item>

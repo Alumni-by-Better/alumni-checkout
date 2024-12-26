@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
 import Home from "./views/Home";
 import PreCheckout from "./views/PreCheckout";
-import { ThankYou } from "./views/components/ThankYou";
+import { ThankYou } from "./views/ThankYou";
 import { UserProvider } from "./context/UserContext";
 
 function App() {

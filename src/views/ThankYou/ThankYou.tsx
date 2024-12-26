@@ -1,6 +1,6 @@
 import { Col, Row } from "antd";
-import { useUser } from "../../../hooks/useUser";
-import { UserProvider } from "../../../context/UserContext";
+import { useUser } from "../../hooks/useUser";
+import { UserProvider } from "../../context/UserContext";
 
 
 const styles = {

@@ -1,1 +1,0 @@
-export { ThankYou } from './ThankYou';

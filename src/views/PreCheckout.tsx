@@ -304,7 +304,7 @@ const PreCheckout: React.FC = () => {
               />
             </Form.Item> */}
 
-            <Button style={styles.formButton} onClick={generateLink} disabled={loading}>
+            <Button style={styles.formButton} onClick={generateLink} loading={loading} disabled={loading}>
               {loading ? 'Gerando...' : 'Gerar Link de Pagamento'}
             </Button>
             {link && (

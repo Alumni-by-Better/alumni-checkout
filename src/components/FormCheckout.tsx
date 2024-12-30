@@ -74,6 +74,7 @@ const FormCheckout = ({ course, material, recurrence, customer }: FormCheckoutPr
   console.log('course formcheckout', course);
   console.log('course cycles', cycles);
   console.log('course installments', installments);
+  console.log('material formcheckout', material);
 
   const [form] = Form.useForm();
 
@@ -277,7 +278,6 @@ const FormCheckout = ({ course, material, recurrence, customer }: FormCheckoutPr
           type="email"
           value={customer?.email}
           disabled={!!customer?.email}
-          readOnly={!!customer?.email}
         />
       </Form.Item>
 
@@ -402,6 +402,24 @@ const FormCheckout = ({ course, material, recurrence, customer }: FormCheckoutPr
               <Select.Option key={index + 1} value={index + 1}>
                 {index + 1}x de R$
                 {formatNumber((course?.pricing_schema?.price ?? 0) / (index + 1) * 2)}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      )}
+
+      {course?.plan_items && (
+        <Form.Item<FieldType>
+          style={styles.formItem}
+          label="Parcelas do Material Didático"
+          name="installments"
+          rules={[{ required: true, message: 'Please input your installments!' }]}
+        >
+          <Select style={styles.formSelect}>
+            {[...Array(cycles)].map((_, index) => (
+              <Select.Option key={index + 1} value={index + 1}>
+                {index + 1}x de R$
+                {formatNumber((material?.pricing_schema?.price ?? 0) / (index + 1))}
               </Select.Option>
             ))}
           </Select>

@@ -26,6 +26,12 @@ interface RegisterLinkData {
   material_id: string;
   discount: number;
   recurrence: number;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
 }
 
 export const submitCheckout = async (data: CheckoutData) => {

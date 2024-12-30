@@ -1,11 +1,11 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Col, Row } from "antd";
+import { Col, message, Row } from "antd";
 
 import checkoutIcon from '../assets/images/checkout-icon.png';
 import alumniLogo from '../assets/images/alumni-logo.svg';
 import FormCheckout from '../components/FormCheckout';
 // import { useCheckout } from "../context/CheckoutContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchCheckoutDataByToken, getCourseById, getPlanById } from "../services/api";
 import { useParams } from "react-router-dom";
 import { formatNumber } from "../utils";
@@ -139,7 +139,7 @@ interface CheckoutData {
 function Home() {
   const { token } = useParams<ParamsProps>();
   // const { checkoutData, setCheckoutData } = useCheckout();
-  const [checkoutDataByToken, setCheckoutDataByToken] = useState<CheckoutData>();
+  const [checkoutDataByToken, setCheckoutDataByToken] = useState<CheckoutData>({ course_id: '', material_id: '', discount: 0, recurrence: false, customer: { name: '', email: '', phone: '', address: '' } });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<CourseProps>();
@@ -147,47 +147,44 @@ function Home() {
   const installments =
     parseInt(selectedCourse?.name?.match(/\d+/)?.[0] || "0", 10);
 
-  useEffect(() => {
-    const fetchCheckoutData = async () => {
-      setLoading(true);
-      try {
-        if (!token) {
-          throw new Error('Checkout token não fornecido');
-        }
+  const fetchCheckoutData = useCallback(async () => {
+    if (!token) {
+      setError('Checkout token não fornecido');
+      setLoading(false);
+      return;
+    }
 
-        // Nova função de busca baseada no token
-        const checkoutData = await fetchCheckoutDataByToken(token);
-        console.log('checkoutData', checkoutData);
+    try {
+      const checkoutData: CheckoutData = await fetchCheckoutDataByToken(token);
 
-        if (!checkoutData) {
-          throw new Error('Nenhum dado encontrado para o token fornecido');
-        }
-
-        setCheckoutDataByToken(checkoutData);
-
-        const course =
-          checkoutData.recurrence
-            ? await getPlanById(checkoutData.course_id) // Busca plano
-            : await getCourseById(checkoutData.course_id); // Busca curso
-
-        console.log('course', course);
-
-        setSelectedCourse(course);
-
-        const material = await getCourseById(checkoutData.material_id);
-        setSelectedMaterial(material);
-
-        console.log("material", material);
-      } catch (error) {
-        console.error('Erro ao carregar os dados do checkout:', error);
-        setError('Erro ao carregar os dados do checkout');
-      } finally {
-        setLoading(false);
+      if (!checkoutData) {
+        message.error('Nenhum dado encontrado para o token fornecido');
+        throw new Error('Nenhum dado encontrado para o token fornecido');
       }
-    };
 
-    fetchCheckoutData();
+      setCheckoutDataByToken(checkoutData);
+
+      const course =
+        checkoutData?.recurrence
+          ? await getPlanById(checkoutData?.course_id) // Busca plano
+          : await getCourseById(checkoutData?.course_id); // Busca curso
+
+      setSelectedCourse(course);
+
+      const material = await getCourseById(checkoutData.material_id);
+      setSelectedMaterial(material);
+    } catch (error) {
+      console.error('Erro ao carregar os dados do checkout:', error);
+      setError('Erro ao carregar os dados do checkout');
+      message.error('Erro ao carregar os dados do checkout');
+    } finally {
+      setLoading(false);
+    }
   }, [token]);
+
+  useEffect(() => {
+    fetchCheckoutData();
+  }, [fetchCheckoutData]);
 
 
   console.log('checkoutDataByToken', checkoutDataByToken);

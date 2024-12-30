@@ -48,7 +48,6 @@ const PreCheckout: React.FC = () => {
 
       const materiais = await getMaterials()
       setMateriais(materiais);
-      console.log("materiais", materiais);
 
       const courses = products.filter((course: Course) => !course.name.includes('Recorrência') && !course.name.includes('Material Didático'));
       setCourses(courses);
@@ -102,7 +101,6 @@ const PreCheckout: React.FC = () => {
   const generateLink = async () => {
     if (!selectedCourseId || !selectedMaterialId) return;
     console.log("selectedCourseId", selectedCourseId);
-    console.log("recurrence", recurrence);
 
     setLoading(true);
 
